@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title>Porter TIME!!!</title>
+    <link href='/static/css/styles.css' rel='stylesheet' type='text/css'/>
+  </head>
+  <body>
+    <div id='main'>
+      ..LOADING..
+    </div>
+    <script>
+        hook = document.getElementById("main");
+
+        ws = new WebSocket("ws://localhost:8080/websocket");
+
+        ws.onmessage = function(payload) {
+          hook.innerHTML = payload.data;
+        };
+    </script>
+
+  </body>
+</html>
+ 
