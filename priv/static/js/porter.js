@@ -52,7 +52,16 @@ Registry.prototype.publish = function(name, data) {
   window.dispatchEvent(event);
 };
 
-Register.prototpye.clearRegisters = function() {};
+Registry.prototype.clearSubscribers = function() {
+  var self = this;
+  for(var key in this.subscribers) {
+    if(Object.prototype[key]) return;
+    this.subscribers[key].forEach(function(listener) {
+      self.unsubscribe(key, listener)
+    }
+  }
+  this.subscribers = {};
+};
 
 var Connection = function (url) {
   this.url = url;
@@ -90,7 +99,7 @@ Connection.prototype.connect = function (url){
 
 Connection.prototype.disconnect = function () {
 	this.ws.close();
-  this.registry.clearListeners();
+  this.registry.clearSubscribers();
 };
 
 /* Rpc details
