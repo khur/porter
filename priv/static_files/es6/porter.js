@@ -1,13 +1,5 @@
 // es6
 'use strict'
-function Hook(){
-	function Hook(){
-		
-	}
-	return Hook
-}
-
-
 export class Hook {
 
 	constructor(elementId) {
