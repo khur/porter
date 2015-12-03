@@ -14,11 +14,50 @@ Hook.prototype.render = function (text) {
 		return;
 	} 
 	this.element.innerHTML = text;
-}
+};
+
+var Registry = function() {
+	this.subscribers = {};
+};
+
+Registry.prototype.findSubscriber = function(name) {
+  return this.subscribers[name];
+};
+
+Registry.prototype.subscribe = function(name, listener) {
+  var subscriber = this.findSubscriber(name);
+
+  if(subscriber) {
+    subscriber.push(listener);
+  } else {
+    subscriber = [listener];
+  }
+  
+  this.subscribers[name] = subscriber;
+  window.addEventListener(name, listener);
+};
+
+Registry.prototype.unsubscribe = function(name, listener) {
+  var subscriber = this.findSubscriber(name);
+
+  if(subscriber) {
+    subscriber = subscriber.filter(function(item) { return item != listener; });
+    this.subscribers[name] = subscriber;
+    window.removeEventListener(name, listener);
+  }
+};
+
+Registry.prototype.publish = function(name, data) {
+  var event = new CustomEvent(name, {"details": data});
+  window.dispatchEvent(event);
+};
+
+Register.prototpye.clearRegisters = function() {};
 
 var Connection = function (url) {
   this.url = url;
   this.connect(url);
+  this.registry = new Registry();
 };
 
 Connection.prototype.connect = function (url){
@@ -28,16 +67,31 @@ Connection.prototype.connect = function (url){
 	this.ws = new WebSocket(url);
 
 	// add listener for reconnections
-	this.ws.addEventListener("message", function(e) {
-		console.log(e);
-		//window.dispatchEvent(e);
-	});
+  this.ws.onopen = function(e) {
+    console.log(e);
+    this.registry.publish("ws_open", e.data);
+  };
+
+	this.ws.onmessage = function(e) {
+    console.log(e);
+    this.registry.publish("ws_message", e.data);
+	};
+
+  this.ws.onerror = function(e) {
+    console.log(e);
+    this.registry.publish("ws_error", e.data);
+  };
+
+  this.ws.onclose = function(e) {
+    console.log(e);
+    this.connect(this.url);
+  };
 };
 
 Connection.prototype.disconnect = function () {
 	this.ws.close();
-	window.removeEventListener("incoming_message");
-}
+  this.registry.clearListeners();
+};
 
 /* Rpc details
   callbackAction type string
@@ -48,13 +102,4 @@ Connection.prototype.disconnect = function () {
 */
 Connection.prototype.rpc = function(action, callbackAction, args) {
 	this.ws.send(JSON.stringify({action, callbackAction, args}));
-}
-
-
-var Registry = function() {
-	this.subscribers = {};
-};
-
-Registry.prototype.subscribe = function(evtName, callback){
-	
 }
