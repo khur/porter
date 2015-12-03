@@ -1,21 +1,5 @@
 'use strict'
 
-var Hook = function (elementId) {
-  this.elementId = elementId;
-  this.element = document.getElementById(elementId);
-  if (this.element == null || this.element == undefined) {
-		console.error("Failed to hook to element " + elementId)
-	}
-};
-
-Hook.prototype.render = function (text) {
-	if (this.element == null || this.element == undefined) {
-		console.error("Invalid element. Cannot render.");
-		return;
-	} 
-	this.element.innerHTML = text;
-};
-
 var Registry = function() {
 	this.subscribers = {};
 };
@@ -48,7 +32,7 @@ Registry.prototype.unsubscribe = function(name, listener) {
 };
 
 Registry.prototype.publish = function(name, data) {
-  var event = new CustomEvent(name, {"details": data});
+  var event = new CustomEvent(name, {"detail": data});
   window.dispatchEvent(event);
 };
 
@@ -58,18 +42,20 @@ Registry.prototype.clearSubscribers = function() {
     if(Object.prototype[key]) return;
     this.subscribers[key].forEach(function(listener) {
       self.unsubscribe(key, listener)
-    }
+    });
   }
   this.subscribers = {};
 };
 
-var Connection = function (url) {
+var Porter = function (url) {
   this.url = url;
   this.connect(url);
   this.registry = new Registry();
 };
 
-Connection.prototype.connect = function (url){
+Porter.prototype.connect = function (url){
+  var self = this;
+
 	if (this.ws != null && this.ws != undefined) {
 		this.disconnect();
 	}
@@ -77,29 +63,39 @@ Connection.prototype.connect = function (url){
 
 	// add listener for reconnections
   this.ws.onopen = function(e) {
-    console.log(e);
-    this.registry.publish("ws_open", e.data);
+    console.info("connected to:", self.url);
+    self.registry.publish("ws::onopen", e);
+    self.registry.publish("porter::connection_opened", e.data);
   };
 
 	this.ws.onmessage = function(e) {
-    console.log(e);
-    this.registry.publish("ws_message", e.data);
+    self.registry.publish("ws::onmessage", e);
+    self.registry.publish("porter::incoming_message", e.data);
 	};
 
   this.ws.onerror = function(e) {
-    console.log(e);
-    this.registry.publish("ws_error", e.data);
+    self.registry.publish("ws::onerror", e);
+    self.registry.publish("porter::connection_error", e.data);
   };
 
   this.ws.onclose = function(e) {
-    console.log(e);
-    this.connect(this.url);
+    self.registry.publish("ws::onclose", e);
+    self.registry.publish("porter::connection_closed", e.data);
+    self.connect(self.url);
   };
 };
 
-Connection.prototype.disconnect = function () {
+Porter.prototype.disconnect = function() {
 	this.ws.close();
   this.registry.clearSubscribers();
+};
+
+Porter.prototype.subscribe = function(name, listener) {
+  this.registry.subscribe(name, listener);
+};
+
+Porter.prototype.unsubscribe = function(name, listener) {
+  this.registry.unsubscribe(name, listener);
 };
 
 /* Rpc details
@@ -109,6 +105,8 @@ Connection.prototype.disconnect = function () {
   Signature:
     action(source), callbackAction(target), args
 */
-Connection.prototype.rpc = function(action, callbackAction, args) {
+Porter.prototype.rpc = function(action, callbackAction, args) {
+  this.registry.publish("porter::sending_rpc",
+      {"action": action, "callback_action": callbackAction, "args": args});
 	this.ws.send(JSON.stringify({action, callbackAction, args}));
 }
