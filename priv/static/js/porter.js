@@ -28,8 +28,9 @@ Connection.prototype.connect = function (url){
 	this.ws = new WebSocket(url);
 
 	// add listener for reconnections
-	this.ws.addEventListener("message", function() {
-		window.broadcast("incoming_message");
+	this.ws.addEventListener("message", function(e) {
+		console.log(e);
+		//window.dispatchEvent(e);
 	});
 };
 
@@ -47,4 +48,13 @@ Connection.prototype.disconnect = function () {
 */
 Connection.prototype.rpc = function(action, callbackAction, args) {
 	this.ws.send(JSON.stringify({action, callbackAction, args}));
+}
+
+
+var Registry = function() {
+	this.subscribers = {};
+};
+
+Registry.prototype.subscribe = function(evtName, callback){
+	
 }

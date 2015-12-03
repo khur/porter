@@ -13,7 +13,7 @@ defmodule Porter do
   def routes do
     [
       {"/",             :cowboy_static,     {:priv_file, :porter, "index.html"}},
-      {"/static/[...]", :cowboy_static,     {:priv_dir,  :porter, "static_files"}},
+      {"/static/[...]", :cowboy_static,     {:priv_dir,  :porter, "static"}},
       {"/websocket", Porter.WebsocketHandler, []}
     ]
 
