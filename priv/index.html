@@ -7,16 +7,8 @@
     <div id='main'>
       ..LOADING..
     </div>
-    <script>
-        hook = document.getElementById("main");
-
-        ws = new WebSocket("ws://localhost:8080/websocket");
-
-        ws.onmessage = function(payload) {
-          hook.innerHTML = payload.data;
-        };
-    </script>
-
+    <script src="/static/js/porter.js"></script>
   </body>
+
 </html>
  

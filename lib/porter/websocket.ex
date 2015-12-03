@@ -20,7 +20,7 @@ defmodule Porter.WebsocketHandler do
     IO.inspect content
     {:reply, {:text, content}, req, state}
   end
-  
+
   def websocket_handle(data, req, state) do
     IO.puts     "----------> Caught by fallback"
     IO.inspect  data
