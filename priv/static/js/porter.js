@@ -63,21 +63,23 @@ RpcWhitelist.prototype.call_rpc = function(name, args){
   this.rpcs[name](args);
 };
 
-var Porter = function (url, parent) {
+
+var WsConnector = function(url){
   this.url = url;
-  this.connect(url);
-  this.registry = new Registry();
-  this.whitelist = new RpcWhitelist();
-  this.parent = parent || window;
-};
+  this.ws = null;
+}
 
-Porter.prototype.connect = function (url){
+WsConnector.prototype.connect = function(registry) {
+
+  if (!registry) throw "WsConnector requires a valid registry.";
+  this.registry = registry;
+
   var self = this;
-
+  // clean up before a reconnect
   if (this.ws != null && this.ws != undefined) {
     this.disconnect();
   }
-  this.ws = new WebSocket(url);
+  this.ws = new WebSocket(self.url);
 
   // add listener for reconnections
   this.ws.onopen = function(e) {
@@ -89,7 +91,6 @@ Porter.prototype.connect = function (url){
   this.ws.onmessage = function(e) {
     self.registry.publish("ws::onmessage", e);
     self.registry.publish("porter::incoming_message", e.data);
-    self.execute_rpc(e.data);
   };
 
   this.ws.onerror = function(e) {
@@ -100,12 +101,35 @@ Porter.prototype.connect = function (url){
   this.ws.onclose = function(e) {
     self.registry.publish("ws::onclose", e);
     self.registry.publish("porter::connection_closed", e.data);
-    self.connect(self.url);
-  };
+    self.connect();
+  };  
+};
+
+WsConnector.prototype.disconnect = function() {
+  if (this.ws) this.ws.close();
+};
+
+WsConnector.prototype.send = function(payload) {
+  this.ws.send(payload);
+};
+
+
+var Porter = function (connection) {
+  this.registry   = new Registry();
+  this.connection = connection
+  this.whitelist  = new RpcWhitelist();
+};
+
+Porter.prototype.connect = function (){
+  var self = this;
+  this.registry.subscribe("porter::incoming_message", function(e) {
+    self.execute_rpc(e.detail);
+  });
+  this.connection.connect(this.registry);
 };
 
 Porter.prototype.disconnect = function() {
-  this.ws.close();
+  this.connection.disconnect()
   this.registry.clearSubscribers();
 };
 
@@ -127,7 +151,7 @@ Porter.prototype.unsubscribe = function(name, listener) {
 Porter.prototype.rpc = function(serverAction, clientAction, args) {
   this.registry.publish("porter::sending_rpc",
       {"serverAction": serverAction, "clientAction": clientAction, "args": args});
-  this.ws.send(JSON.stringify({serverAction, clientAction, args}));
+  this.connection.send(JSON.stringify({serverAction, clientAction, args}));
 }
 
 /* Return Rpc details
