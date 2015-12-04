@@ -7,8 +7,17 @@
     <div id='main'>
       ..LOADING..
     </div>
+
     <script src="/static/js/porter.js"></script>
     <script src="/static/js/hook.js"></script>
+
+    <script>
+      var hook = new Hook("main");
+      var porter = new Porter("ws://localhost:8080/websocket");
+      porter.whitelist.add_rpc("hook.render", function(args) {
+        hook.render(args);
+      });
+    </script>
 
   </body>
 

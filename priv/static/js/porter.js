@@ -47,10 +47,28 @@ Registry.prototype.clearSubscribers = function() {
   this.subscribers = {};
 };
 
-var Porter = function (url) {
+var RpcWhitelist = function() {
+  this.rpcs = {};
+};
+
+RpcWhitelist.prototype.add_rpc = function(name, callback){
+  this.rpcs[name] = callback;
+};
+
+RpcWhitelist.prototype.remove_rpc = function(name){
+  delete(this.rpcs, name);
+};
+
+RpcWhitelist.prototype.call_rpc = function(name, args){
+  this.rpcs[name](args);
+};
+
+var Porter = function (url, parent) {
   this.url = url;
   this.connect(url);
   this.registry = new Registry();
+  this.whitelist = new RpcWhitelist();
+  this.parent = parent || window;
 };
 
 Porter.prototype.connect = function (url){
@@ -71,6 +89,7 @@ Porter.prototype.connect = function (url){
 	this.ws.onmessage = function(e) {
     self.registry.publish("ws::onmessage", e);
     self.registry.publish("porter::incoming_message", e.data);
+    self.execute_rpc(e.data);
 	};
 
   this.ws.onerror = function(e) {
@@ -99,14 +118,25 @@ Porter.prototype.unsubscribe = function(name, listener) {
 };
 
 /* Rpc details
-  callbackAction type string
-  action         type string
-  args           array of items
-  Signature:
-    action(source), callbackAction(target), args
-*/
-Porter.prototype.rpc = function(action, callbackAction, args) {
+ * serverAction type string
+ * clientAction type string
+ * args         array of items
+ * Signature:
+ *  serverAction(serverTarget), clientAction(clientTarget), args
+ */
+Porter.prototype.rpc = function(serverAction, clientAction, args) {
   this.registry.publish("porter::sending_rpc",
-      {"action": action, "callback_action": callbackAction, "args": args});
-	this.ws.send(JSON.stringify({action, callbackAction, args}));
+      {"serverAction": serverAction, "clientAction": clientAction, "args": args});
+	this.ws.send(JSON.stringify({serverAction, clientAction, args}));
 }
+
+/* Return Rpc details
+ * clientAction type string
+ * args         type all
+ * Signature:
+ *  clientAction(target), args
+ */
+Porter.prototype.execute_rpc = function(data) {
+  var rpc_data = JSON.parse(data);
+  this.whitelist.call_rpc(rpc_data.clientAction, rpc_data.args);
+};
