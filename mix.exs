@@ -14,7 +14,7 @@ defmodule Porter.Mixfile do
   def application do
     [
       mod: { Porter, [] },
-      applications: [:cowboy, :ranch] 
+      applications: [:cowboy, :ranch, :poison] 
     ]
   end
 
@@ -29,7 +29,8 @@ defmodule Porter.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      { :cowboy, "1.0.0" },
+      { :cowboy,      "1.0.0"   },
+      { :poison,      "~> 1.5"  },
     ]
   end
 end

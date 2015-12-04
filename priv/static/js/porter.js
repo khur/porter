@@ -1,7 +1,7 @@
 'use strict'
 
 var Registry = function() {
-	this.subscribers = {};
+  this.subscribers = {};
 };
 
 Registry.prototype.findSubscriber = function(name) {
@@ -74,23 +74,23 @@ var Porter = function (url, parent) {
 Porter.prototype.connect = function (url){
   var self = this;
 
-	if (this.ws != null && this.ws != undefined) {
-		this.disconnect();
-	}
-	this.ws = new WebSocket(url);
+  if (this.ws != null && this.ws != undefined) {
+    this.disconnect();
+  }
+  this.ws = new WebSocket(url);
 
-	// add listener for reconnections
+  // add listener for reconnections
   this.ws.onopen = function(e) {
     console.info("connected to:", self.url);
     self.registry.publish("ws::onopen", e);
     self.registry.publish("porter::connection_opened", e.data);
   };
 
-	this.ws.onmessage = function(e) {
+  this.ws.onmessage = function(e) {
     self.registry.publish("ws::onmessage", e);
     self.registry.publish("porter::incoming_message", e.data);
     self.execute_rpc(e.data);
-	};
+  };
 
   this.ws.onerror = function(e) {
     self.registry.publish("ws::onerror", e);
@@ -105,7 +105,7 @@ Porter.prototype.connect = function (url){
 };
 
 Porter.prototype.disconnect = function() {
-	this.ws.close();
+  this.ws.close();
   this.registry.clearSubscribers();
 };
 
@@ -127,7 +127,7 @@ Porter.prototype.unsubscribe = function(name, listener) {
 Porter.prototype.rpc = function(serverAction, clientAction, args) {
   this.registry.publish("porter::sending_rpc",
       {"serverAction": serverAction, "clientAction": clientAction, "args": args});
-	this.ws.send(JSON.stringify({serverAction, clientAction, args}));
+  this.ws.send(JSON.stringify({serverAction, clientAction, args}));
 }
 
 /* Return Rpc details

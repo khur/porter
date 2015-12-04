@@ -15,10 +15,12 @@ defmodule Porter.WebsocketHandler do
     :ok
   end
 
-  def websocket_handle({:text, content}, req, state) do
+  def websocket_handle({:text, encoded}, req, state) do
+    content = Poison.decode!(encoded)
     IO.puts "websocket handled text: #{inspect content}"
-    IO.inspect content
-    {:reply, {:text, content}, req, state}
+    args = Porter.ServerActions.handle_incoming(content["serverAction"], content["args"])
+    response = %{clientAction: content["clientAction"], args: args} |> Poison.encode!
+    {:reply, {:text, response}, req, state}
   end
 
   def websocket_handle(data, req, state) do
