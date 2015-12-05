@@ -1,0 +1,23 @@
+{
+  "name": "porter",
+  "homepage": "https://github.com/DataMelon/porter",
+  "authors": [
+    "Jason Goldberger <jlgoldb2@asu.edu>",
+    "Michael Christenson II <m3talsmith@gmail.com>"
+  ],
+  "description": "A contract for a new form of communication between front and backend tech.",
+  "main": "porter.js",
+  "moduleType": [],
+  "keywords": [
+    "websocket",
+    "rpc"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
