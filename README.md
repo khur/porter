@@ -4,10 +4,17 @@ Render HTML on the server and push it directly to a frontend element.
 
 ### Installation
 
+Install with npm
+
 ```
-npm install --save porter-client
+npm install --save porter
 ```
 
+Install with bower
+
+```
+bower install --save porter
+```
 
 ### Usage
 
@@ -21,8 +28,9 @@ npm install --save porter-client
       ..Main..
     </div>
 
-    <script src="/static/js/porter.js"></script>
-    <script src="/static/js/hook.js"></script>
+    <script src="/js/porter.js"></script>
+    <script src="/js/hook.js"></script>
+    <script src="/js/connectors/ws_connector.js"></script>
 
     <script>
       var connector = new WsConnector("ws://localhost:8080/websocket")
