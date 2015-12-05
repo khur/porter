@@ -7,7 +7,7 @@ Render HTML on the server and push it directly to a frontend element.
 Install with npm
 
 ```
-npm install --save porter
+npm install --save porter-client
 ```
 
 Install with bower
