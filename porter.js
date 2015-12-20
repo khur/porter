@@ -113,3 +113,6 @@ Porter.prototype.execute_rpc = function(data) {
   var rpc_data = JSON.parse(data);
   this.whitelist.call_rpc(rpc_data.clientAction, rpc_data.args);
 };
+
+
+module.exports = Porter;

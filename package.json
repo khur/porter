@@ -1,6 +1,6 @@
 {
   "name": "porter-client",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "homepage": "https://github.com/DataMelon/porter#readme",
   "description": "A contract for a new form of communication between front and backend tech.",
   "keywords": [
