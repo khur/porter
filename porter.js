@@ -47,32 +47,34 @@ Registry.prototype.clearSubscribers = function() {
   this.subscribers = {};
 };
 
-var RpcWhitelist = function() {
-  this.rpcs = {};
+
+var Dispatcher = function() {
+  this.actions = {};
 };
 
-RpcWhitelist.prototype.add_rpc = function(name, callback){
-  this.rpcs[name] = callback;
+Dispatcher.prototype.add = function(name, callback){
+  this.actions[name] = callback;
 };
 
-RpcWhitelist.prototype.remove_rpc = function(name){
-  delete(this.rpcs, name);
+Dispatcher.prototype.remove = function(name){
+  delete(this.actions, name);
 };
 
-RpcWhitelist.prototype.call_rpc = function(name, args){
-  this.rpcs[name](args);
+Dispatcher.prototype.execute = function(name, args){
+  this.actions[name](args);
 };
+
 
 var Porter = function (connection) {
-  this.registry   = new Registry();
-  this.connection = connection
-  this.whitelist  = new RpcWhitelist();
+  this.registry     = new Registry();
+  this.connection   = connection
+  this.dispatcher   = new Dispatcher();
 };
 
 Porter.prototype.connect = function (){
   var self = this;
   this.registry.subscribe("porter::incoming_message", function(e) {
-    self.execute_rpc(e.detail);
+    self.execute(e.detail);
   });
   this.connection.connect(this.registry);
 };
@@ -90,28 +92,41 @@ Porter.prototype.unsubscribe = function(name, listener) {
   this.registry.unsubscribe(name, listener);
 };
 
-/* Rpc details
- * serverAction type string
- * clientAction type string
- * args         array of items
- * Signature:
- *  serverAction(serverTarget), clientAction(clientTarget), args
- */
-Porter.prototype.rpc = function(serverAction, clientAction, args) {
-  this.registry.publish("porter::sending_rpc",
-      {"serverAction": serverAction, "clientAction": clientAction, "args": args});
-  this.connection.send(JSON.stringify({serverAction, clientAction, args}));
-}
+/* 
 
-/* Return Rpc details
- * clientAction type string
- * args         type all
- * Signature:
- *  clientAction(target), args
- */
-Porter.prototype.execute_rpc = function(data) {
-  var rpc_data = JSON.parse(data);
-  this.whitelist.call_rpc(rpc_data.clientAction, rpc_data.args);
+  * Broadast details
+  * topic        type string
+  * clientAction type string
+  * args         array of items
+  * Signature:
+  *  serverAction(serverTarget), clientAction(clientTarget), args
+
+*/
+Porter.prototype.broadcast = function(topic, action, args) {
+  var generalbroadcast  = "porter::broadcast";
+  var topicBroadcast    = broadcast + "::" + topic;
+  var payload           = {"topic": topic, "action": action, "args": args};
+
+  this.registry.publish(broadcast, payload)
+  this.registry.publish(topicBroadcast, payload)
+  this.connection.send(JSON.stringify(payload));
+
+};
+
+
+/*
+
+  dispatch expects JSON in the form:
+  * '{ action: "SomeString", args:["a", "list","of","args",1] }'
+  * action       type string
+  * args         type all
+  * Signature:
+  *  function(action, args)
+
+*/
+Porter.prototype.dispatch = function(data) {
+  var incomingData = JSON.parse(data);
+  this.dispatcher.execute(incomingData.action, incomingData.args);
 };
 
 
