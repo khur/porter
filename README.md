@@ -49,7 +49,7 @@ bower install --save porter
 
 ### TODOS:
 
-[ ] Make connectors optional and named.
-[ ] Give connectors a `kind` array property.
-[ ] Abstract Consumer.
-[ ] Abstract Producer.
+- [ ] Make connectors optional and named.
+- [ ] Give connectors a `kind` array property.
+- [ ] Abstract Consumer.
+- [ ] Abstract Producer.
