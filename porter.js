@@ -34,7 +34,7 @@ Channel.prototype.subscribe = function(action, callback) {
   }
   
   this.subscribers[action] = subscriber;
-  chanAction = this.formatAction(action)
+  var chanAction = this.formatAction(action)
   window.addEventListener(chanAction, callback);
 };
 
@@ -44,7 +44,7 @@ Channel.prototype.unsubscribe = function(action, callback) {
   if (subscriber) {
     subscriber = subscriber.filter(function(item) { return item != callback; });
     this.subscribers[action] = subscriber;
-    chanAction = this.formatAction(action)
+    var chanAction = this.formatAction(action)
     window.removeEventListener(chanAction, callback);
   }
 };
@@ -94,7 +94,9 @@ Channel.prototype.clearSubscribers = function() {
 // };
 
 
-
+function grab(e) {
+  return e.detail;
+}
 
 var GenericConnector = function(channel){
   this.name = "genconn";
@@ -209,8 +211,13 @@ GenericConnector.prototype.publish = function(action, payload) {
 // };
 
 
-module.exports = {
-  Porter:   Porter,
-  Channel:  Channel,
-  Producer: Producer,
-};
+//  Porter:   Porter,
+// Producer: Producer,
+
+
+if (typeof module != 'undefined') {
+  module.exports = {
+    Channel:  Channel,
+    GenericConnector: GenericConnector
+  };
+}
