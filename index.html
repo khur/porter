@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Porter Index</title>
+</head>
+<body>
+<h1 id="groot1"></h1>
+<h1 id="groot2"></h1>
+<h1 id="groot3"></h1>
+<script type="text/javascript" src="porter.js"></script>
+<script type="text/javascript">
+  
+  // grab an element
+  var e1 = document.getElementById("groot1");
+  var e2 = document.getElementById("groot2");
+  var e3 = document.getElementById("groot3");
+
+  //define an equipment list that renders on `update`
+  function EquipmentList(element ,state){
+    this.element = element;
+    this.update(state);
+  }
+
+  // update the object state and render().
+  EquipmentList.prototype.update = function(newState) {
+    this.state = newState;
+    this.render()
+  };
+
+  //update the element to with state to render
+  EquipmentList.prototype.render = function() {
+    this.element.innerText = this.state
+  }
+
+
+  // define an equipmentChannel and a helper function.
+  var equipmentChannel = new Channel("equipment");
+  
+  function pushEquipmentListState(state) {
+    equipmentChannel.publish("state", state);
+  }
+
+
+  // make an instance of equipment list
+  var eq1 = new EquipmentList(e1, "GROOOOOOT");
+  var eq2 = new EquipmentList(e2, "not GROOOOOOT");
+  var eq3 = new EquipmentList(e3, 1);
+
+
+  // describe what should happen on the "state" event.
+  equipmentChannel.subscribe("state", function(e){
+    eq1.update(grab(e).eq1);
+    eq2.update(grab(e).eq2);
+  })
+
+  equipmentChannel.subscribe("eq3state", function(e){
+    eq3.update(grab(e));
+  })
+
+  console.log("eq3 is", eq3);
+  setInterval(function(e){
+    console.log(e);
+    equipmentChannel.publish("eq3state", -eq3.state);
+  }, 666);
+
+
+  // fire async events.
+  setInterval(function(){
+    pushEquipmentListState({eq1: Math.random(1), eq2: Math.random(1)});
+  }, 1000)
+
+</script>
+</body>
+</html>
