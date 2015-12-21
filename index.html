@@ -7,37 +7,47 @@
 <h1 id="groot"></h1>
 <script type="text/javascript" src="porter.js"></script>
 <script type="text/javascript">
-  var equipmentChannel = new Channel("equipment");
-  var el = document.getElementById("groot");
   
+  // grab an element
+  var el = document.getElementById("groot");
+
+  //define an equipment list that renders on `update`
   function EquipmentList(state){
     this.update(state);
   }
 
+  // update the object state and render().
   EquipmentList.prototype.update = function(newState) {
     this.state = newState;
     this.render()
   };
 
+  //update the element to with state to render
   EquipmentList.prototype.render = function() {
     el.innerText = this.state;
   }
 
+
+  // define an equipmentChannel and a helper function.
+  var equipmentChannel = new Channel("equipment");
   function pushEquipmentListState(state) {
-    equipmentChannel.publish("state", {state: state});
+    equipmentChannel.publish("state", state);
   }
 
 
-  var equipmentList = new EquipmentList("I am groot");
+  // make an instance of equipment list
+  var equipmentList = new EquipmentList("GROOOOOOT");
 
+  // describe what should happen on the "state" event.
   equipmentChannel.subscribe("state", function(e){
-    equipmentList.update(grab(e).state);
+    equipmentList.update(grab(e));
   })
 
 
+  // fire async events.
   setInterval(function(){
     pushEquipmentListState("I am groot!!!!!");
-  }, 300)
+  }, 400)
 
 
   setInterval(function(){
