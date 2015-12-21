@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Porter Index</title>
+</head>
+<body>
+<h1 id="groot"></h1>
+<script type="text/javascript" src="porter.js"></script>
+<script type="text/javascript">
+  var equipmentChannel = new Channel("equipment");
+  var el = document.getElementById("groot");
+  
+  function EquipmentList(state){
+    this.update(state);
+  }
+
+  EquipmentList.prototype.update = function(newState) {
+    this.state = newState;
+    this.render()
+  };
+
+  EquipmentList.prototype.render = function() {
+    el.innerText = this.state;
+  }
+
+  function pushEquipmentListState(state) {
+    equipmentChannel.publish("state", {state: state});
+  }
+
+
+  var equipmentList = new EquipmentList("I am groot");
+
+  equipmentChannel.subscribe("state", function(e){
+    equipmentList.update(grab(e).state);
+  })
+
+
+  setInterval(function(){
+    pushEquipmentListState("I am groot!!!!!");
+  }, 300)
+
+
+  setInterval(function(){
+    pushEquipmentListState("Am I groot?");
+  }, 500)
+
+
+  setInterval(function(){
+    pushEquipmentListState("I am groot.");
+  }, 701)
+
+</script>
+</body>
+</html>
