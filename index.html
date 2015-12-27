@@ -46,16 +46,20 @@
   var eq2 = new EquipmentList(e2, "not GROOOOOOT");
   var eq3 = new EquipmentList(e3, 1);
 
+  equipmentChannel.subscribe("once", function(e) {
+    console.log("e.detail", e.detail);
+    console.log("e.copy()", e.copy());
+  });
 
   // describe what should happen on the "state" event.
   equipmentChannel.subscribe("state", function(e){
     eq1.update(grab(e).eq1);
     eq2.update(grab(e).eq2);
-  })
+  });
 
   equipmentChannel.subscribe("eq3state", function(e){
     eq3.update(grab(e));
-  })
+  });
 
   console.log("eq3 is", eq3);
   setInterval(function(e){
@@ -67,7 +71,9 @@
   // fire async events.
   setInterval(function(){
     pushEquipmentListState({eq1: Math.random(1), eq2: Math.random(1)});
-  }, 1000)
+  }, 1000);
+
+  setTimeout(function(){equipmentChannel.publish("once", {"some": "info"})}, 1000);
 
 </script>
 </body>
