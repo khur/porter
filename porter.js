@@ -1,5 +1,73 @@
 'use strict'
 
+function fnToString(fn) {
+  return Function.prototype.toString.call(fn)
+}
+var objStringValue = fnToString(Object)
+
+/**
+ * @param {any} obj The object to inspect.
+ * @returns {boolean} True if the argument appears to be a plain object.
+ */
+
+function isArray(obj) {
+  return Object.prototype.toString.call(obj) === '[object Array]';
+}
+
+function isPlainObject(obj) {
+  if (!obj || typeof obj !== 'object') {
+    return false
+  }
+
+  var proto = typeof obj.constructor === 'function' ? Object.getPrototypeOf(obj) : Object.prototype
+
+  if (proto === null) {
+    return true
+  }
+
+  var constructor = proto.constructor
+
+  return typeof constructor === 'function'
+    && constructor instanceof constructor
+    && fnToString(constructor) === objStringValue
+}
+
+
+function copy(thing){
+  if (isPlainObject(thing)) {
+    var newObj = {};
+    for (var key in thing) {
+      newObj[key] = copy(thing[key])
+    }
+    return newObj;
+  }
+  if (isArray(thing)) {
+    return thing.map(function(item){ return copy(item);})
+  }
+  return thing;
+}
+
+
+var PorterEvent = function(event, params){
+  var e;
+  params = params || {
+      bubbles: false,
+      cancelable: false,
+      detail: undefined
+  };
+
+    e = document.createEvent("CustomEvent");
+    e.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+    return e;
+};
+
+PorterEvent.prototype = window.Event.prototype;
+
+PorterEvent.prototype.copy = function() {
+  return copy(this.detail);
+};
+
+
 var Channel = function(name) {
   /*
     The Channel class manages the addition and 
@@ -51,7 +119,7 @@ Channel.prototype.unsubscribe = function(action, callback) {
 
 Channel.prototype.publish = function(action, data) {
   var chanAction = this.formatAction(action);
-  var event = new CustomEvent(chanAction, {"detail": data});
+  var event = new PorterEvent(chanAction, {"detail": data});
   window.dispatchEvent(event);  
 };
 
@@ -65,6 +133,8 @@ Channel.prototype.clearSubscribers = function() {
   }
   this.subscribers = {};
 };
+
+
 
 
 // var Porter = function (name) {
