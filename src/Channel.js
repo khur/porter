@@ -3,6 +3,7 @@ import { copy }        from './helpers';
 import { PorterEvent } from './PorterEvent';
 
 export default class Channel {
+  
   /*
     The Channel class manages the addition and 
     removal of EventListeners with actions and callbacks
