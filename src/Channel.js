@@ -1,13 +1,12 @@
 
-import { copy }        from './helpers';
-import { PorterEvent } from './PorterEvent';
+import { copy }                         from './helpers';
 
 export default class Channel {
-  
+
   /*
     The Channel class manages the addition and 
     removal of EventListeners with actions and callbacks
-    on the window object.
+    on the window object. 
     The Channel class's `publish` method turns actions
     and data into dispatched events namespaced to the channel's
     name ('theChannelName::theAction')
@@ -58,11 +57,9 @@ export default class Channel {
   };
 
   publish(action, data) {
-
     let chanAction = this.formatAction(action);
-    let event = new PorterEvent(chanAction, {"detail": data});
-    window.dispatchEvent(event);  
-
+    let event = new CustomEvent(chanAction, {"detail": data});
+    window.dispatchEvent(event);
   };
 
   clearSubscribers() {

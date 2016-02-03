@@ -10,14 +10,14 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "jest",
-    "compile": "./node_modules/.bin/babel --source-maps --presets es2015,stage-0 -d lib/ src/",
+    "compile": "./node_modules/.bin/babel --source-maps --presets es2015,stage-0 -d dist/ src/",
     "prepublish": "npm run compile"
   },
   "jest": {
     "scriptPreprocessor": "<rootDir>/node_modules/babel-jest",
-    "testFileExtensions": ["es6", "js"],
-    "moduleFileExtensions": ["js", "json", "es6"]
-    },
+    "testFileExtensions": ["js"],
+    "moduleFileExtensions": ["js", "json"]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DataMelon/porter.git"
